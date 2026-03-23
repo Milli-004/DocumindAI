@@ -1,0 +1,10 @@
+{
+  "extends": ["next/core-web-vitals", "next/typescript"]
+}
+```
+
+**`frontend/.gitignore`**
+```
+node_modules/
+.next/
+out/

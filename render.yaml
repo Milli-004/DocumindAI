@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: documind-api
+    env: python
+    pythonVersion: "3.11.9"
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 120
+      - key: CHROMA_PATH
+        value: /tmp/chroma
+```
+
+**`runtime.txt`**
+```
+python-3.11.9
+```
+
+**`.gitignore`**
+```
+venv/
+.env
+__pycache__/
+*.pyc
+.chroma/

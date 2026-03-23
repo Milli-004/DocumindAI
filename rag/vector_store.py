@@ -49,12 +49,3 @@ def delete_document_collection(document_id: str) -> None:
         client.delete_collection(collection_name)
     except Exception:
         pass
-```
-
----
-
-## `frontend/` folder
-
-**`frontend/.env.production`**
-```
-NEXT_PUBLIC_API_URL=https://documind-api-1vu9.onrender.com

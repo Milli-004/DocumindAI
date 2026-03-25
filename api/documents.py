@@ -1,7 +1,4 @@
-# api/documents.py
 import uuid
-import asyncio
-from concurrent.futures import ThreadPoolExecutor
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -11,9 +8,7 @@ from core.dependencies import get_current_user
 from rag.pipeline import ingest_document
 from rag.vector_store import delete_document_collection
 
-router = APIRouter(prefix="/api/documents", tags=["documents"])
-
-_executor = ThreadPoolExecutor(max_workers=2)
+router = APIRouter(tags=["documents"])
 
 
 class DocumentResponse(BaseModel):
@@ -28,6 +23,7 @@ class DocumentResponse(BaseModel):
 
 
 def _run_ingestion(file_bytes: bytes, document_id: str) -> None:
+    """Background task: ingest document into vector store."""
     db = SessionLocal()
     try:
         ingest_document(file_bytes, document_id, db)
@@ -68,8 +64,8 @@ async def upload_document(
     db.commit()
     db.refresh(document)
 
-    loop = asyncio.get_event_loop()
-    loop.run_in_executor(_executor, _run_ingestion, file_bytes, document_id)
+    # Use BackgroundTasks instead of deprecated get_event_loop() + ThreadPoolExecutor
+    background_tasks.add_task(_run_ingestion, file_bytes, document_id)
 
     return document
 

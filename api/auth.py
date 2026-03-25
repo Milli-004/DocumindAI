@@ -1,35 +1,20 @@
 from fastapi import Depends, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from database import get_db
 from db.models import User
-from utils.jwt import decode_access_token
-from fastapi.security import OAuth2PasswordBearer
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+from core.security import create_access_token, verify_password
 
 
-def get_current_user(
-    token: str = Depends(oauth2_scheme),
-    db: Session = Depends(get_db)
+def login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db),
 ):
-    try:
-        payload = decode_access_token(token)
+    user = db.query(User).filter(User.email == form_data.username).first()
 
-        if not payload:
-            raise HTTPException(status_code=401, detail="Invalid token")
+    if not user or not verify_password(form_data.password, user.hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
 
-        user_id = payload.get("sub")
+    token = create_access_token({"sub": user.id})
 
-        if not user_id:
-            raise HTTPException(status_code=401, detail="Invalid token payload")
-
-        user = db.query(User).filter(User.id == str(user_id)).first()
-
-        if not user:
-            raise HTTPException(status_code=401, detail="User not found")
-
-        return user
-
-    except Exception as e:
-        print("AUTH ERROR:", e)
-        raise HTTPException(status_code=401, detail="Authentication failed")
+    return {"access_token": token, "token_type": "bearer"}

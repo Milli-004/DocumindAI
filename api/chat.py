@@ -1,4 +1,3 @@
-# api/chat.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
@@ -8,7 +7,8 @@ from db.models import Conversation, Message, Document, User
 from core.dependencies import get_current_user
 from rag.pipeline import query_document, query_document_stream
 
-router = APIRouter(prefix="/api/chat", tags=["chat"])
+# NO prefix here — main.py already mounts this at /api/chat
+router = APIRouter(tags=["chat"])
 
 
 class ConversationCreate(BaseModel):

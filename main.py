@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import create_tables
 
 # import routers (adjust paths if needed)
-from api.auth import router as auth_router
+from api.auth_routes import router as auth_router
 from api.documents import router as documents_router
 from api.conversations import router as conversations_router
 

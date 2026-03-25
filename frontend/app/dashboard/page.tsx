@@ -23,17 +23,22 @@ export default function DashboardPage() {
   const pollRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchDocuments = useCallback(async () => {
-    try {
-      const response = await api.get("/api/documents/");
-      setDocuments(response.data);
-      return response.data as Document[];
-    } catch (err) {
+  try {
+    const response = await api.get("/api/documents/");
+    setDocuments(response.data);
+    setError(""); 
+    return response.data as Document[];
+  } catch (err: any) {
+    // 401 means not logged in — interceptor in api.ts will redirect to /login
+    // don't show "Failed to load documents" for auth errors
+    if (err.response?.status !== 401) {
       setError("Failed to load documents");
-      return [];
-    } finally {
-      setLoading(false);
     }
-  }, []);
+    return [];
+  } finally {
+    setLoading(false);
+  }
+}, []);
 
   const startPollingIfNeeded = useCallback((docs: Document[]) => {
     const hasPending = docs.some((d) => !d.is_processed);

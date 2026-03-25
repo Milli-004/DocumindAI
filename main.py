@@ -1,50 +1,46 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
 
 from database import create_tables
+
+# import routers (adjust paths if needed)
 from api.auth import router as auth_router
 from api.documents import router as documents_router
-from api.chat import router as chat_router
+from api.conversations import router as conversations_router
 
-app = FastAPI(
-    title="DocuMind API",
-    description="RAG-powered document Q&A system",
-    version="1.0.0"
-)
+app = FastAPI(title="DocuMind API")
+
+# -----------------------
+# CORS SETUP (IMPORTANT)
+# -----------------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:3001",
-        "https://documind-ai-dun.vercel.app",
+        "*",  # change to frontend domain in production
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-@app.options("/{full_path:path}")
-def preflight_handler(full_path: str):
-    return Response(status_code=200)
-
-# Routers
-app.include_router(auth_router)
-app.include_router(documents_router)
-app.include_router(chat_router)
-
+# -----------------------
+# STARTUP EVENT (CRITICAL FIX)
+# -----------------------
 @app.on_event("startup")
-def startup():
-    try:
-        create_tables()
-        print("Database tables ready")
-    except Exception as e:
-        print("Startup error:", e)
+def startup_event():
+    create_tables()
+    print("✅ Database tables created / verified successfully")
 
-# Health check
+# -----------------------
+# HEALTH CHECK (FOR RENDER)
+# -----------------------
 @app.get("/health")
-@app.head("/health")
 def health_check():
-    return {"status": "healthy", "service": "DocuMind API"}
+    return {"status": "ok", "message": "API is running"}
+
+# -----------------------
+# ROUTES
+# -----------------------
+app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
+app.include_router(documents_router, prefix="/api/documents", tags=["Documents"])
+app.include_router(conversations_router, prefix="/api/conversations", tags=["Conversations"])

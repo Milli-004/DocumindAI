@@ -19,6 +19,7 @@ SessionLocal = sessionmaker(
 class Base(DeclarativeBase):
     pass
 
+
 def get_db():
     db = SessionLocal()
     try:
@@ -26,7 +27,8 @@ def get_db():
     finally:
         db.close()
 
-from db.models import User, Document, Conversation, Message
 
 def create_tables():
+    # IMPORTANT: import models here so tables register properly
+    from db import models
     Base.metadata.create_all(bind=engine)

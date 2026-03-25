@@ -1,18 +1,6 @@
-import jwt
-from datetime import datetime, timedelta
+# Kept for backward compatibility.
+# All new code should use core.security directly — it reads
+# SECRET_KEY and ALGORITHM from config/environment, not a hardcoded string.
+from core.security import create_access_token, decode_access_token  # re-export
 
-SECRET_KEY = "your-secret-key"
-ALGORITHM = "HS256"
-
-def create_access_token(data: dict, expires_delta: timedelta = timedelta(days=1)):
-    to_encode = data.copy()
-    expire = datetime.utcnow() + expires_delta
-    to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-
-
-def decode_access_token(token: str):
-    try:
-        return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    except:
-        return None
+__all__ = ["create_access_token", "decode_access_token"]
